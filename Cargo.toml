@@ -1,0 +1,12 @@
+[package]
+name = "imgparser"
+version = "0.1.0"
+authors = ["stijn-volckaert"]
+edition = "2018"
+build = "build.rs"
+
+[dependencies]
+sdl2 = { version = "0.31.0", features = ["bundled", "static-link"] }
+byteorder = { version = "1", default-features = false }
+simple-error = "0.1.13"
+shuteye = "^0"
