@@ -137,17 +137,26 @@ fn decode_ppm_image(cursor: &mut Cursor<Vec<u8>>) -> Result<Image, Box<std::erro
 
     let mut pxls:Vec<Vec<Pixel>> = vec![vec![]; h as usize];
 
-    let mut buff: [u8; 3] = [0; 3];
+    let mut mv: Vec<u8> = vec![];
+    let mut buff: [u8; 1] = [0];
     cursor.seek(std::io::SeekFrom::Current(1));
     for x in 0..w {
         let mut row: Vec<Pixel> = vec!();
         for y in 0..h {
-            cursor.read(&mut buff)?;
-            
+            mv = vec![];
+            for mut z in 0..3 {
+                cursor.read(&mut buff)?;
+                match &buff[0] {
+                    b' ' | b'\t' | b'\n' => { z=-1; }
+                    _ => { mv.push(buff[0]); }
+                }
+                //print!("_{}", mv[z]);
+            }
+
             let px = Pixel {
-                R: buff[0] as u32,
-                G: buff[1] as u32,
-                B: buff[2] as u32
+                R: mv[0] as u32,
+                G: mv[1] as u32,
+                B: mv[2] as u32
             };
             pxls[y as usize].push(px);
         }
