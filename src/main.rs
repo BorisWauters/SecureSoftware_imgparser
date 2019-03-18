@@ -135,22 +135,23 @@ fn decode_ppm_image(cursor: &mut Cursor<Vec<u8>>) -> Result<Image, Box<std::erro
 
 	// TODO: Parse the image here
 
-    let mut pxls:Vec<Vec<Pixel>> = vec![vec![]; h as usize];
+    let mut pxls:Vec<Vec<Pixel>> = vec![];
 
-    let mut mv: Vec<u8> = vec![];
     let mut buff: [u8; 1] = [0];
-    cursor.seek(std::io::SeekFrom::Current(1));
-    for x in 0..w {
+    loop{
+        cursor.read(&mut buff)?;
+        match &buff {
+            b" " | b"\t" | b"\n" => {},
+            _ => { cursor.seek(std::io::SeekFrom::Current(-1)); break; }
+        };
+    };
+
+    for x in 0..h {
         let mut row: Vec<Pixel> = vec!();
-        for y in 0..h {
-            mv = vec![];
+        for y in 0..w {
+            let mut mv: Vec<u8> = vec![];
             for mut z in 0..3 {
-                cursor.read(&mut buff)?;
-                match &buff[0] {
-                    b' ' | b'\t' | b'\n' => { z=-1; }
-                    _ => { mv.push(buff[0]); }
-                }
-                //print!("_{}", mv[z]);
+                mv.push(cursor.read_u8()?);
             }
 
             let px = Pixel {
@@ -158,25 +159,16 @@ fn decode_ppm_image(cursor: &mut Cursor<Vec<u8>>) -> Result<Image, Box<std::erro
                 G: mv[1] as u32,
                 B: mv[2] as u32
             };
-            pxls[y as usize].push(px);
+            row.push(px);
         }
+        pxls.insert(0, row);
     }
-
-    let mut pxl = Pixel {
-        R: pxls[100][500].R as u32,
-        G: pxls[100][500].G as u32,
-        B: pxls[100][500].B as u32
-    };
 
     image = Image {
         width: w,
         height: h,
         pixels: pxls
-        //pixels: vec![vec![pxl; w as usize]; h as usize]
     };
-
-    //print!("{},{}__", image.pixels.len(), image.pixels[0].len());
-    //print!("{},{}__", pxls.len(), pxls[0].len());
 
     Ok(image)
 }
