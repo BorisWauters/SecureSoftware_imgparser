@@ -120,7 +120,7 @@ fn decode_ppm_image(cursor: &mut Cursor<Vec<u8>>) -> Result<Image, Box<std::erro
     };
 
     // read header
-    let mut c: [u8; 2] = [0, 2];
+    let mut c: [u8; 2] = [0; 2];
     cursor.read(&mut c)?;
     match &c {
         b"P6" => { },
@@ -131,41 +131,43 @@ fn decode_ppm_image(cursor: &mut Cursor<Vec<u8>>) -> Result<Image, Box<std::erro
     let h = read_num(cursor)?;
     let cr = read_num(cursor)?;
 
-    print!("width: {}, height: {}, color range: {}", w, h, cr);
+    print!("width: {}, height: {}, color range: {}\n", w, h, cr);
 
 	// TODO: Parse the image here
 
-    /*let mut pixels = vec![vec![]; h as usize];
+    let mut pxls:Vec<Vec<Pixel>> = vec![vec![]; h as usize];
 
-    for i in 0..w {
-        for j in 0..h {
-            let r = read_num(cursor)?;
-            let g = read_num(cursor)?;
-            let b = read_num(cursor)?;
-
-            print!("R: {}, G: {}, B: {}", r, g, b);
-
-            let pixel = Pixel {
-                R: r,
-                G: g,
-                B: b
+    let mut buff: [u8; 3] = [0; 3];
+    cursor.seek(std::io::SeekFrom::Current(1));
+    for x in 0..w {
+        let mut row: Vec<Pixel> = vec!();
+        for y in 0..h {
+            cursor.read(&mut buff)?;
+            
+            let px = Pixel {
+                R: buff[0] as u32,
+                G: buff[1] as u32,
+                B: buff[2] as u32
             };
-
-            pixels[j as usize].push(pixel);
+            pxls[y as usize].push(px);
         }
-    }*/
+    }
 
-    let px = Pixel {
-        R: 255,
-        G: 20,
-        B: 80
+    let mut pxl = Pixel {
+        R: pxls[100][500].R as u32,
+        G: pxls[100][500].G as u32,
+        B: pxls[100][500].B as u32
     };
 
     image = Image {
         width: w,
         height: h,
-        pixels: vec![vec![px; w as usize]; h as usize]
+        pixels: pxls
+        //pixels: vec![vec![pxl; w as usize]; h as usize]
     };
+
+    //print!("{},{}__", image.pixels.len(), image.pixels[0].len());
+    //print!("{},{}__", pxls.len(), pxls[0].len());
 
     Ok(image)
 }
