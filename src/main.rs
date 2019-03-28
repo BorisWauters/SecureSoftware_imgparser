@@ -1,18 +1,18 @@
 extern crate sdl2;
 #[macro_use] extern crate simple_error;
 
-use std::error::Error;
-use std::path::Path;
-use std::fs::File;
-use std::io::{Read, Cursor};
-use byteorder::{LittleEndian, ReadBytesExt};
-use std::fmt;
-use std::io::prelude::*;
-use std::io::{Seek, SeekFrom};
-use sdl2::pixels::Color;
-use sdl2::rect::Rect;
-use shuteye::sleep;
-use std::time::Duration;
+use std:      : error: : Error;
+use std:      : path:  : Path;
+use std:      : fs:    : File;
+use std:      : io:    : {Read, Cursor};
+use byteorder:: {LittleEndian, ReadBytesExt};
+use std:      : fmt;
+use std:      : io:    : prelude:: *;
+use std:      : io:    : {Seek, SeekFrom};
+use sdl2:     : pixels:: Color;
+use sdl2:     : rect:  : Rect;
+use shuteye:  : sleep;
+use std:      : time:  : Duration;
 
 #[derive(Clone)]
 struct Pixel
@@ -24,23 +24,23 @@ struct Pixel
 
 struct Image
 {
-    width: u32,
+    width : u32,
     height: u32,
     pixels: Vec<Vec<Pixel>>
 }
 
 fn show_image(image: &Image)
 {
-    let sdl = sdl2::init().unwrap();
+    let sdl             = sdl2::init().unwrap();
     let video_subsystem = sdl.video().unwrap();
-    let display_mode = video_subsystem.current_display_mode(0).unwrap();
+    let display_mode    = video_subsystem.current_display_mode(0).unwrap();
 
     let w = match display_mode.w as u32 > image.width {
-        true => image.width,
+        true  => image.width,
         false => display_mode.w as u32
     };
     let h = match display_mode.h as u32 > image.height {
-        true => image.height,
+        true  => image.height,
         false => display_mode.h as u32
     };
     
@@ -93,7 +93,7 @@ fn read_num(cursor: &mut Cursor<Vec<u8>>) -> Result<u32, Box<std::error::Error>>
         cursor.read(&mut c)?;
         match &c {
             b" " | b"\t" | b"\n" => { },
-            _ => { cursor.seek(std::io::SeekFrom::Current(-1)); break; }
+              _                  => { cursor.seek(std::io::SeekFrom::Current(-1)); break; }
         }
     }
 
@@ -101,20 +101,20 @@ fn read_num(cursor: &mut Cursor<Vec<u8>>) -> Result<u32, Box<std::error::Error>>
     loop {
         cursor.read(&mut c)?;
         match c[0] {
-            b'0' ... b'9' => { v.push(c[0]); },
+            b'0' ... b'9'        => { v.push(c[0]); },
             b' ' | b'\t' | b'\n' => { cursor.seek(std::io::SeekFrom::Current(-1)); break; },
-            _ => { bail!("Parse error") }
+              _                  => { bail!("Parse error") }
         }
     }
 
     let num_str = std::str::from_utf8(&v)?;
-    let num = num_str.parse::<u32>()?;
+    let num     = num_str.parse::<u32>()?;
     Ok(num)
 }
 
 fn decode_ppm_image(cursor: &mut Cursor<Vec<u8>>) -> Result<Image, Box<std::error::Error>> {
     let mut image = Image { 
-        width: 0,
+        width : 0,
         height: 0,
         pixels: vec![]
     };
@@ -124,11 +124,11 @@ fn decode_ppm_image(cursor: &mut Cursor<Vec<u8>>) -> Result<Image, Box<std::erro
     cursor.read(&mut c)?;
     match &c {
         b"P6" => { },
-        _ => { bail!("error") }
+          _   => { bail!("error") }
     }
     
-    let w = read_num(cursor)?;
-    let h = read_num(cursor)?;
+    let w  = read_num(cursor)?;
+    let h  = read_num(cursor)?;
     let cr = read_num(cursor)?;
 
     print!("width: {}, height: {}, color range: {}\n", w, h, cr);
@@ -142,7 +142,7 @@ fn decode_ppm_image(cursor: &mut Cursor<Vec<u8>>) -> Result<Image, Box<std::erro
         cursor.read(&mut buff)?;
         match &buff {
             b" " | b"\t" | b"\n" => {},
-            _ => { cursor.seek(std::io::SeekFrom::Current(-1)); break; }
+              _                  => { cursor.seek(std::io::SeekFrom::Current(-1)); break; }
         };
     };
 
@@ -165,7 +165,7 @@ fn decode_ppm_image(cursor: &mut Cursor<Vec<u8>>) -> Result<Image, Box<std::erro
     }
 
     image = Image {
-        width: w,
+        width : w,
         height: h,
         pixels: pxls
     };
@@ -182,7 +182,7 @@ fn main()
         return;
     }
 
-    let path = Path::new(&args[1]);
+    let path    = Path::new(&args[1]);
     let display = path.display();
 
     let mut file = match File::open(&path)    {
@@ -197,8 +197,8 @@ fn main()
 
     // construct a cursor so we can seek in the raw buffer
     let mut cursor = Cursor::new(raw_file);
-    let mut image = match decode_ppm_image(&mut cursor) {
-        Ok(img) => img,
+    let mut image  = match decode_ppm_image(&mut cursor) {
+        Ok (img) => img,
         Err(why) => panic!("Could not parse PPM file - Desc: {}", why.description()),
     };
 
